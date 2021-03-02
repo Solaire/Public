@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ConsoleApp1\**" />
+    <Compile Remove="Snake\**" />
+    <Compile Remove="UnitTest\**" />
+    <EmbeddedResource Remove="ConsoleApp1\**" />
+    <EmbeddedResource Remove="Snake\**" />
+    <EmbeddedResource Remove="UnitTest\**" />
+    <None Remove="ConsoleApp1\**" />
+    <None Remove="Snake\**" />
+    <None Remove="UnitTest\**" />
+  </ItemGroup>
+
+</Project>
