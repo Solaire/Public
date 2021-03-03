@@ -342,3 +342,6 @@ ASALocalRun/
 # Binaries
 *.exe
 *.dll
+
+# Unix swap file for
+*.swp
