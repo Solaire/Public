@@ -9,10 +9,12 @@ BASE_PATH = abspath(dirname(__file__))
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
-# Screen and game area
+# Window size
 SCREEN_HEIGHT = 700
 SCREEN_WIDTH = 700
+FPS = 20
 
+# Game area
 GAME_AREA_WIDTH = 500
 GAME_AREA_HEIGHT = 500
 GAME_AREA_X_POS = 100
@@ -28,17 +30,18 @@ END_STATE = 3
 FONT = BASE_PATH + '/common/font.ttf'
 FONT_SIZE_TITLE = 50
 FONT_SIZE_PROMPT = 25
-FONT_SIZE_SCORE = 20
+FONT_SIZE_SCORE = 30
 
-# Test location
-TITLE_TEXT_POS_X = 164
-TITLE_TEXT_POS_Y = 155
-GAME_OVER_TEXT_POS_X = 210
-GAME_OVER_TEXT_POS_Y = 225
-PLAY_PROMPT_TEXT_POS_X = 201
-PLAY_PROMPT_TEXT_POS_Y = 270
-SCORE_TEXT_POS_X = 5
-SCORE_TEXT_POS_Y = 5
+# Text location
+TITLE_TEXT_POS_X = 130
+TITLE_TEXT_POS_Y = (SCREEN_HEIGHT // 2) - 100
+PLAY_PROMPT_TEXT_POS_X = 80
+PLAY_PROMPT_TEXT_POS_Y = (SCREEN_HEIGHT // 2)
+
+SCORE_TEXT_POS_X = GAME_AREA_X_POS
+SCORE_TEXT_POS_Y = 50
+HI_SCORE_TEXT_POS_X = (SCREEN_WIDTH // 2)
+HI_SCORE_TEXT_POS_Y = 50
 
 # Snake directions
 DIRECTION_UP = 0
@@ -47,7 +50,7 @@ DIRECTION_LEFT = 3
 DIRECTION_RIGHT = 4
 
 # Snake and food size
-FOOD_SIZE = 10
+SIZE = 10
 
 '''
 Calculate and return the closest divisible of n / m
@@ -96,9 +99,9 @@ class Food:
     def __init__(self):
         self.x = 0
         self.y = 0
-        self.size = FOOD_SIZE
+        self.size = SIZE
         self.colour = WHITE
-        self.SetRandomPosition()
+        self.SetRandomPosition(None)
 
     '''
     Return current food position
@@ -110,11 +113,24 @@ class Food:
     Set radnom position, snapping it to the invisible "grid"
     This function does not check if the position is occupied by snake parts
     '''
-    def SetRandomPosition(self):
-        x = uniform(GAME_AREA_X_POS, GAME_AREA_X_POS + GAME_AREA_WIDTH - 20)
-        y = uniform(GAME_AREA_Y_POS, GAME_AREA_Y_POS + GAME_AREA_HEIGHT - 20)
-        self.x = FindClosestDivisible(x, FOOD_SIZE)
-        self.y = FindClosestDivisible(y, FOOD_SIZE)
+    def SetRandomPosition(self, snake):
+        if snake is None:
+            x = uniform(GAME_AREA_X_POS, GAME_AREA_X_POS + GAME_AREA_WIDTH - 20)
+            y = uniform(GAME_AREA_Y_POS, GAME_AREA_Y_POS + GAME_AREA_HEIGHT - 20)
+            self.x = FindClosestDivisible(x, SIZE)
+            self.y = FindClosestDivisible(y, SIZE)
+        else:
+            overlap = True
+            while overlap:
+                overlap = False
+                x = FindClosestDivisible(uniform(GAME_AREA_X_POS, GAME_AREA_X_POS + GAME_AREA_WIDTH - 20), SIZE)
+                y = FindClosestDivisible(uniform(GAME_AREA_Y_POS, GAME_AREA_Y_POS + GAME_AREA_HEIGHT - 20), SIZE)
+                for i in range(1, len(snake.parts)):
+                    tmp = snake.parts[i].GetPosition()
+                    if tmp.x == x and tmp.y:
+                        overlap = True
+            self.x = x
+            self.y = y
 
     '''
     Draw food to screen
@@ -160,8 +176,8 @@ class SnakePart:
         elif self.y > GAME_AREA_Y_POS + GAME_AREA_HEIGHT - 20:
             self.y = GAME_AREA_Y_POS
 
-        self.x = FindClosestDivisible(self.x, FOOD_SIZE)
-        self.y = FindClosestDivisible(self.y, FOOD_SIZE)
+        self.x = FindClosestDivisible(self.x, SIZE)
+        self.y = FindClosestDivisible(self.y, SIZE)
 
     '''
     Move the cell's position by x and y
@@ -202,20 +218,20 @@ class Snake:
 
         initX = int(SCREEN_WIDTH / 2)
         initY = int(SCREEN_WIDTH / 2)
-        self.parts.append(SnakePart(FindClosestDivisible(initX, FOOD_SIZE), FindClosestDivisible(initY, FOOD_SIZE), FOOD_SIZE, almostRed))
+        self.parts.append(SnakePart(FindClosestDivisible(initX, SIZE), FindClosestDivisible(initY, SIZE), SIZE, almostRed))
 
     '''
     Get snake's movement vector
     '''
-    def __GetMovement(self):
-        dir = self.__GetDirection()
-        offset = Vector2(dir.x * FOOD_SIZE, dir.y * FOOD_SIZE)
+    def GetMovement(self):
+        dir = self.GetDirection()
+        offset = Vector2(dir.x * SIZE, dir.y * SIZE)
         return offset
 
     '''
     Get snake's direction of travel
     '''
-    def __GetDirection(self):
+    def GetDirection(self):
         dir = Vector2(0, 0)
 
         if self.direction == DIRECTION_LEFT:
@@ -237,7 +253,7 @@ class Snake:
     Set colour of a specified cell
     Colour is a rainbow gradient
     '''
-    def __SetColour(self, cell):
+    def SetColour(self, cell):
         r = 0
         g = 0
         b = 0
@@ -283,7 +299,7 @@ class Snake:
     '''
     def Move(self):
         previousPos = self.parts[0].GetPosition()
-        movement = self.__GetMovement()
+        movement = self.GetMovement()
 
         self.parts[0].Move(movement.x, movement.y)
         self.parts[0].MaybeWrapAround()
@@ -307,8 +323,8 @@ class Snake:
     Add a cell to snake's tail
     '''
     def AddBodyPart(self):
-        bodyPart = SnakePart(-16, -16, FOOD_SIZE, WHITE)
-        self.__SetColour(bodyPart)
+        bodyPart = SnakePart(-16, -16, SIZE, WHITE)
+        self.SetColour(bodyPart)
         self.parts.append(bodyPart)
 
     '''
@@ -341,11 +357,6 @@ class Snake:
 Main game class
 '''
 class Game:
-    screen = None
-    snake = None
-    food = None
-    gameOver = False
-
     def __init__(self):
         init()
         self.width = SCREEN_WIDTH
@@ -353,83 +364,111 @@ class Game:
         self.screen = display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = time.Clock()
         self.timer = time.get_ticks()
+
         self.score = 0
-
-        self.gameOverText = Text(FONT, FONT_SIZE_TITLE, "Game Over", WHITE, GAME_OVER_TEXT_POS_X, GAME_OVER_TEXT_POS_Y)
-        self.scoreText = Text(FONT, FONT_SIZE_SCORE, "Score", WHITE, SCORE_TEXT_POS_X, SCORE_TEXT_POS_Y)
+        self.hiScore = 0
         
-        done = False
-        self._snake = Snake()
-        self._food = Food()
+        self.snake = Snake()
+        self.food = Food()
 
-        while True:
-            self.clock.tick(15)
-            display.flip()
+    def Run(self):
+        state   = GAME_OVER_STATE
+        newGame = False
+        ticks   = 0
 
-            if not done:
-                for evt in event.get():
-                    if evt.type == QUIT:
-                        done = True
+        # Game loop
+        while state is not END_STATE:
+            self.screen.fill((0, 0, 0)) # Clear screen
+
+            # Get key events or all states
+            for evt in event.get():
+                if evt.type == QUIT or (evt.type == KEYDOWN and evt.key == K_ESCAPE):
+                    state = END_STATE
+                    break
+
+                if state == MENU_STATE or state == GAME_OVER_STATE:
+                    if evt.type == KEYDOWN and (evt.key == K_SPACE or evt.key == K_RETURN):
+                        state = PLAY_STATE
+                        newGame = True
+
+                elif state == PLAY_STATE:
                     if evt.type == KEYDOWN and evt.key == K_LEFT:
-                        self._snake.ChangeDirection(DIRECTION_LEFT)
+                        self.snake.ChangeDirection(DIRECTION_LEFT)
                     elif evt.type == KEYDOWN and evt.key == K_RIGHT:
-                        self._snake.ChangeDirection(DIRECTION_RIGHT)
+                        self.snake.ChangeDirection(DIRECTION_RIGHT)
                     elif evt.type == KEYDOWN and evt.key == K_UP:
-                        self._snake.ChangeDirection(DIRECTION_UP)
+                        self.snake.ChangeDirection(DIRECTION_UP)
                     elif evt.type == KEYDOWN and evt.key == K_DOWN:
-                        self._snake.ChangeDirection(DIRECTION_DOWN)
-                    elif evt.type == KEYDOWN and evt.key == K_ESCAPE:
-                        sys.exit(0)
+                        self.snake.ChangeDirection(DIRECTION_DOWN)
 
-                self.Update()
+            if state == END_STATE:
+                continue
 
-                self.screen.fill((0, 0, 0))
-                self.DrawGameArea()
-                self._snake.Draw(self.screen)
-                self._food.Draw(self.screen)
+            # Update game based on state
+            if state == MENU_STATE:
+                self.DrawMenuState()
 
-                self.acutalScore = Text(FONT, 20, str(self.score), WHITE, 86, 5)
-                self.scoreText.Draw(self.screen)
-                self.acutalScore.Draw(self.screen)
-
+            elif state == PLAY_STATE:
+                if newGame:
+                    self.ResetGame()
+                    newGame = False
+                self.UpdateGame()
                 if self.IsFailure():
-                    gameOver = True
-                    done = True
+                    state = GAME_OVER_STATE
 
-            else:
-                currentTime = time.get_ticks()
-                self.ShowGameOverScreen(currentTime)
+            if state is not MENU_STATE:
+                # Draw the studd
+                self.DrawGameArea()
+                self.snake.Draw(self.screen)
+                self.food.Draw(self.screen)
+
+                # Draw text
+                scoreText      = Text(FONT, FONT_SIZE_SCORE, "Score: " + str(self.score),      WHITE, SCORE_TEXT_POS_X,    SCORE_TEXT_POS_Y)
+                hiScoreText    = Text(FONT, FONT_SIZE_SCORE, "Hi Score: "+ str(self.hiScore),  WHITE, HI_SCORE_TEXT_POS_X, HI_SCORE_TEXT_POS_Y)
+                scoreText.Draw(self.screen)
+                hiScoreText.Draw(self.screen)
+
+                if(state == GAME_OVER_STATE):
+                    ticks += 1
+                    self.DrawGameOver(ticks)
+
+            # Update the screen
+            display.flip()
+            self.clock.tick(FPS)
 
     '''
     Reset game state
     '''
-    def Reset(self):
-        self._snake.Reset()
-        self._food = Food()
+    def ResetGame(self):
+        self.snake.Reset()
+        self.food = Food()
         self.keys = key.get_pressed()
         self.timer = time.get_ticks()
         self.noteTimer = time.get_ticks()
         self.snakeAlive = True
+        self.score = 0
 
     '''
     Update game logic
     '''
-    def Update(self):        
-        self._snake.Move()
+    def UpdateGame(self):        
+        self.snake.Move()
 
-        if self._snake.GetHeadPosition() == self._food.GetPosition():
-            self._food.SetRandomPosition()
-            self._snake.AddBodyPart()
+        if self.snake.GetHeadPosition() == self.food.GetPosition():
+            self.food.SetRandomPosition(self.snake)
+            self.snake.AddBodyPart()
             self.score += 1
+            if self.hiScore < self.score:
+                self.hiScore = self.score
 
     '''
     Check if failure condition has been reached
     '''
     def IsFailure(self):
-        if self._snake.IsBitingSelf():
+        if self.snake.IsBitingSelf():
             return True
 
-        vec2SnakePos = self._snake.GetHeadPosition()
+        vec2SnakePos = self.snake.GetHeadPosition()
         if (vec2SnakePos.x < 0 or vec2SnakePos.x > SCREEN_WIDTH) and ((vec2SnakePos.y < 0 or vec2SnakePos.y > SCREEN_HEIGHT)):
             return True
 
@@ -438,20 +477,12 @@ class Game:
     '''
     Display game over screen
     '''
-    def ShowGameOverScreen(self, currentTime):
-        self.screen.fill((0, 0, 0))
-        passed = currentTime - self.timer
-        self.gameOverText.Draw(self.screen)
-        
-        for e in event.get():
-            if self.IsExit(e):
-                sys.exit(0)
-
-    '''
-    Check if exit condition has been met
-    '''
-    def IsExit(self, event):
-        return event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE)
+    def DrawGameOver(self, ticks):
+        if (ticks % FPS) < 13:
+            gameOverText = Text(FONT, FONT_SIZE_TITLE, "Game Over", WHITE, TITLE_TEXT_POS_X + 30, TITLE_TEXT_POS_Y)
+            promptText  = Text(FONT, FONT_SIZE_PROMPT, "Press   [SPACE]   or   [ENTER]   to  play", WHITE, PLAY_PROMPT_TEXT_POS_X, PLAY_PROMPT_TEXT_POS_Y)
+            gameOverText.Draw(self.screen)
+            promptText.Draw(self.screen)
 
     '''
     Draw game region
@@ -460,5 +491,15 @@ class Game:
         draw.rect(self.screen, WHITE, Rect(GAME_AREA_X_POS - 5, GAME_AREA_Y_POS - 5, GAME_AREA_WIDTH, GAME_AREA_HEIGHT))
         draw.rect(self.screen, BLACK, Rect(GAME_AREA_X_POS, GAME_AREA_Y_POS, GAME_AREA_WIDTH - 10, GAME_AREA_HEIGHT - 10))
 
+    '''
+    Draw menu
+    '''
+    def DrawMenuState(self):
+        menuText    = Text(FONT, FONT_SIZE_TITLE, "Rainbow snake", WHITE, TITLE_TEXT_POS_X, TITLE_TEXT_POS_Y)
+        promptText  = Text(FONT, FONT_SIZE_PROMPT, "Press   [SPACE]   or   [ENTER]   to  play", WHITE, PLAY_PROMPT_TEXT_POS_X, PLAY_PROMPT_TEXT_POS_Y)
+        menuText.Draw(self.screen)
+        promptText.Draw(self.screen)
+
 if __name__ == '__main__':
     game = Game()
+    game.Run()
