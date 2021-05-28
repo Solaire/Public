@@ -127,7 +127,7 @@ class Food:
                 y = FindClosestDivisible(uniform(GAME_AREA_Y_POS, GAME_AREA_Y_POS + GAME_AREA_HEIGHT - 20), SIZE)
                 for i in range(1, len(snake.parts)):
                     tmp = snake.parts[i].GetPosition()
-                    if tmp.x == x and tmp.y:
+                    if tmp.x == x and tmp.y == y:
                         overlap = True
             self.x = x
             self.y = y
@@ -362,6 +362,9 @@ class Game:
         self.width = SCREEN_WIDTH
         self.height = SCREEN_HEIGHT
         self.screen = display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        display.set_caption("Rainbow Snake")
+        icon = image.load(BASE_PATH + '/common/snake.ico')
+        display.set_icon(icon)
         self.clock = time.Clock()
         self.timer = time.get_ticks()
 
@@ -372,7 +375,7 @@ class Game:
         self.food = Food()
 
     def Run(self):
-        state   = GAME_OVER_STATE
+        state   = MENU_STATE
         newGame = False
         ticks   = 0
 
