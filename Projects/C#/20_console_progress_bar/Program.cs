@@ -16,7 +16,7 @@ namespace ConsoleProgress
             for(int i = 0; i < 100; i++)
             {
                 progress.Report((double)i / 100);
-                Thread.Sleep(50);
+                //Thread.Sleep(50);
             }
 
             progress.Stop();
