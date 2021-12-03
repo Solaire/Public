@@ -19,7 +19,7 @@ end
 function BinaryScale:ShiftFilter(movement)
     if(movement > 0) then
         self._filter = self._filter >> movement
-    elseif(movement < 0)
+    elseif(movement < 0) then
         self._filter = self._filter << (-1 * movement)
     end 
 end
