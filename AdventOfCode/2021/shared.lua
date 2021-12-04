@@ -6,7 +6,9 @@
 function StringSplit(str, delimiter)
     local result = {};
     for match in (str..delimiter):gmatch("(.-)"..delimiter) do
-        table.insert(result, match)
+        if(match ~= "") then
+          table.insert(result, match)
+        end
     end
     return result
 end

@@ -4,15 +4,14 @@ local BinaryScale = require "scale"
 --[[ Task A:
 
     * Input file contains a diagnostic report data, in the
-    form of binary numbers
+    form of binary numbers.
     * The binary numbers can be used to generate two values:
     - Gamma rate,
     - Epsilon rate
     * Each bit of the gamma and epsilon rates can be determined by either
     the most common bit (gamma rate) and the least common bit (epsilon rate)
-    in the corresponding position of all numbers in the diagnostic report
-    * Product of gamma rate and epsilon rate will generate the power consumption value
-    
+    in the corresponding position of all numbers in the diagnostic report.
+    * Product of gamma rate and epsilon rate will generate the power consumption value.
 ]]
 local function CalculatePowerConsumption(hFile)
     local bitCounter = {}
@@ -93,9 +92,9 @@ end
         are equally common, keep values with a 1 in the position being considered.
         - To find CO2 scrubber rating, determine the least common value (0 or 1) in
         the current bit position, and keep only numbers with that bit in that position.
-        If 0 and 1 are equally common, keep values with a 0 in the position being considered.
+        - If 0 and 1 are equally common, keep values with a 0 in the position being considered.
     * Product of Oxygen generator rating and the CO2 scrubber rating will
-    generate the life support rating value
+    generate the life support rating value.
 ]]
 local function CalculateLifeSupportRating(hFile)
     local maxScale = BinaryScale:Create()
