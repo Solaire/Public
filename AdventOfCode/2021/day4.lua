@@ -52,21 +52,38 @@ local function FindWinningBingoBoard(hFile)
     local grids = {}
     local i = 1
     
+    -- Create grid objects
     inputLine = hFile:read("*line")
     while inputLine do
         if(inputLine == "") then
-          local grid = BingoGrid:New()
-          grids[#grids + 1] = grid
+            local grid = BingoGrid:New()
+            grids[#grids + 1] = grid
         else
-          grids[#grids]:AddRow(inputLine)
+            grids[#grids]:AddRow(inputLine)
         end
         inputLine = hFile:read("*line")
     end
     
-    local x = 0
-    local y = 0
-    print(string.format("Winning board: %d", x))
-    print(string.format("Bingo score: %d", x * y))
+    local winningBoard = 0
+    local unmarkedSum  = 0
+    local lastInput    = 0
+    
+    for i = 1, #randSequence do
+        for ii = 1, #grids do
+            grids[ii]:Mark(randSequence[i])
+            if(grids[ii]:IsWinner()) then
+                winningBoard = ii
+                unmarkedSum = grids[ii]:GetUnmarkedSum()
+                lastInput = i
+            end
+        end
+    end
+
+    print(string.format("Winning board: %d", winningBoard))
+    print(string.format("Last input: %d", randSequence[lastInput]))
+    print(string.format("Bingo score: %d", winningBoard * randSequence[lastInput]))
+    
+    return winningBoard * randSequence[lastInput]
 end
 
 --[[ Task B:
