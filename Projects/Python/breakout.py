@@ -9,7 +9,7 @@ BASE_PATH = os.path.abspath(os.path.dirname(__file__))
 
 # Window size
 W_WIDTH  = 700 
-W_HEIGHT = 900
+W_HEIGHT = 700
 
 # Text windows subsection
 DIVIDER_LINE_Y      = 125
