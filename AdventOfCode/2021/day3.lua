@@ -1,4 +1,5 @@
 require "shared"
+require "graph"
 local BinaryScale = require "scale"
 
 --[[ Task A:
