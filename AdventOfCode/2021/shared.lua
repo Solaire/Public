@@ -28,3 +28,12 @@ function OpenFile(filename)
     end
     return hFile
 end
+
+function FileExists(filename)
+	local hFile = io.open(filename, "r")
+	if(hFile ~= nil) then
+		io.close(hFile)
+		return true
+	end
+	return false
+end
